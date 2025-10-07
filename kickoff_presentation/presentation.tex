@@ -251,7 +251,7 @@ Main Phases:
 \end{frame}
 
 
-\section{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+\subsection{Research Questions}
 
 \begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
     \textbf{Are latent monitors as vulnerable to obfuscation attacks as simple probes?} \\
@@ -310,6 +310,11 @@ Main Phases:
         \item \cite{mckenzie_stack_2025} introduce STACK, a multi-layer framework to tackle jailbreaks and unsafe output generations.
     \end{itemize}
     Using uncertainty quqantification from CP we might be able to design more efficient response policies, providing statistical guarantees on unsafe behaviours while minimising expensive interventions (e.g. llm-as-a-judge calls). 
+\end{frame}
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness}
+    \textbf{How do techniques like context distillation and deliberative alignment affect probes?} \\
+    These can be seen as advanced `behaviour induction' mechanisms. It is plausible that despite behavioural equivalence with their prompted counterparts, models with distilled instructions might be harder to monitor. 
 \end{frame}
 
 % TODO put more detail about the timing and sequences of steps, using 'maximum information' rule of thumb to prioritise. 
