@@ -1,0 +1,337 @@
+\documentclass{beamer}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[backend=biber,style=alphabetic]{biblatex}
+
+\addbibresource{biblio.bib}
+
+\logo{\includegraphics[height=0.5cm]{images/KCL-Logo.png}}
+
+% Theme choice
+\usetheme{default}
+\usecolortheme{lily}
+\usefonttheme{professionalfonts}
+
+
+% Title page information
+\title{Verifiably Robust Conformal Probes}
+\subtitle{Timeline and Research Breakdown}
+\author{Edoardo Pona}
+\institute{King's College London}
+\date{\today}
+
+\setbeamertemplate{footline}[frame number]
+
+\begin{document}
+
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Presentation Outline}
+\tableofcontents
+\end{frame}
+
+
+\section{Introduction}
+% TODO just a quick recap of what we're doing and why
+% \begin{frame}{Introduction}
+% \end{frame}
+
+
+\section{High Level Timeline}
+\begin{frame}{High Level Timeline}
+Main Phases:
+\begin{itemize}
+    \item Benchmark Construction (months 1-6) 
+    \item Adversarial attacks and robustness (months 7-14) 
+    \item OOD generalisation, extending to multi-step settings (months 15-20)
+    \item Limited ground truth, CP under label uncertainty (months 21-24)
+\end{itemize}
+\end{frame}
+
+
+% what behaviour and setting
+% how is the behaviour induced? 
+% how is the behaviour monitored
+% what is to be done with the prediction? 
+% TODO: make sure to include discussion about the 'intended' use of these probes
+%       better future predictions, robustness to attacks, conformal guarantees -> better policies and escalation.
+
+
+\section{Phase 1: Benchmark Construction}
+
+\subsection{Benchmark Criteria}
+
+
+\begin{frame}{Phase 1: Benchmark Construction}
+    \textbf{Phase 1 breakdown:}\\
+        \begin{enumerate}
+            \item Position our method.   
+            \item Collect relevant benchmarks and baselines. 
+            \item Construct missing benchmarks and baselines. 
+        \end{enumerate}
+\end{frame}
+
+\begin{frame}{Phase 1: Benchmark Construction - Positioning}
+    Identify advantages, limitations and use-cases of our method. \\
+    \begin{itemize}
+        \item Latent space vs I/O monitoring
+        \begin{itemize}
+            \item When is latent space monitoring justified? 
+            \item How do they interact, and how are they used in combination in realistic settings?  
+        \end{itemize}
+
+        \item Latent adversarial robustness
+        \begin{itemize}
+            \item How does robustness in the latent space translate to robustness in I/O space?
+            \item How does this affect On-Policy (e.g. agents in the wild) and Off-Policy (e.g. jailbreaking) settings? 
+            % TODO in which cases does this matter? 
+        \end{itemize}
+
+        \item Conformal Prediction and Uncertainty Quantification
+        \begin{itemize}
+            \item What do coverage guarantees allow us to do downstream? 
+            \item Against what baselines can we compare?  
+        \end{itemize}
+
+        \item On-policy vs off-policy monitoring
+        \begin{itemize}
+            \item Our method might behave differently depending on the setting. In particular, robustness is likely to be most relevant in the context of adversarial attacks (off-policy). 
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 1: Bechmark Construction - Positioning}
+    \textbf{Current Beliefs:}
+    \begin{itemize}
+        \item Latent space monitoring is most useful when we are interested in predicting properties of the output \emph{before} generating it, from the prompt, reasoning, CoT, etc...\cite{chan_can_2025}.
+        \item Robustness in latent space should translate to increased detection of adversarial attacks in I/O space \cite{casper_defending_2024,yi_latent-space_2025}, however: 
+        \begin{itemize}
+            \item Traditional probes are already quite good at this. 
+            \item Shortcomings of such probes are generally not due to adversarial attacks. 
+        \end{itemize}
+
+    \end{itemize}
+\end{frame}
+
+
+% TODO: where do we answer these questions? 
+% TODO add all the considerations about cost and reaction policies for CP. 
+% TODO: do we want to built to vrcp progressively? ask at the meeting. 
+% TODO: write down the missing benchmarks and baselines. 
+
+\begin{frame}{Phase 1: Benchmark Construction}
+    \textbf{Benchmark Criteria:}
+    \begin{itemize}
+        \item Jailbreaks (adversarial attacks on I/O and latent space) 
+        \item On-Policy behaviour monitoring (single and multi-step)
+        \item Interested in monitoring model `intentions' and future properties, not properties of input/output data. - `Future Probing' \cite{chan_can_2025}
+        \item Varying levels of realism are important. 
+        \item Response policies (downstream applications of monitors)
+    \end{itemize}
+\end{frame}
+
+
+
+\subsection{Behaviour Induction Mechanisms}
+
+\begin{frame}{Phase 1: Benchmark Construction}
+    \textbf{Behaviour Induction Mechanisms}\\
+    It has been observed that monitors' performance depends heavily on how these behaviours have been induced.\\
+    For example, behaviours induced indirectly via RLHF are \emph{much} harder to detect. 
+    Examples:
+    \begin{itemize}
+        \item \emph{sycophancy} \cite{wang_when_2025,vennemeyer_sycophancy_2025} 
+        \item \emph{sophistry} \cite{wen_language_2024}
+        \item \emph{deception} \cite{wang_when_2025-1}
+        
+    \end{itemize}
+    It is important that we take this into account when constructing baselines and benchmarks. \\
+    Backdoor detection will also be affected by these considerations. 
+\end{frame}
+
+\begin{frame}
+
+    \textbf{Behaviour Induction Mechanisms}\\
+    \begin{itemize}
+        \item \emph{Explicit Prompting} - we tell the model how to behave in some part of its input. 
+        \item \emph{Implicit Prompting} - the prompt implicitly suggests to the model to behave in a certain way. 
+        % TODO add citation to apollo work doing this implicit prompting - probably the one on deception. 
+        \item \emph{Direct Fine-tuning} - GRPO, RLHF, SFT, etc...
+        \item \emph{Indirect Fine-tuning}
+    \end{itemize}
+
+\end{frame}
+
+% TODO talk in more detail about the different mechanisms and how they affect monitoring
+
+\subsection{Benchmarks and Baselines}
+
+% TODO add baselines about cost and reaction policies to compare for CP. 
+
+
+\begin{frame}{Phase 1: Benchmark Construction - Baselines}
+    \textbf{AmongUs} \cite{golechha_among_2025} \\
+    Monitoring for strategic deception in a toy multi-agent environment. \\
+    \begin{itemize}
+        \item On-Policy 
+        \item Multi-step
+        \item Behaviour emerges naturally (no explicit prompting)\footnote{the agent knows the game, as well as it's role, e.g. `impostor'} 
+        \item Strategic Deception
+    \end{itemize}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{images/among_us.png}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}{Phase 1: Benchmark Construction - Baselines}
+    \textbf{AmongUs} \cite{golechha_among_2025} \\
+    Latent space probing over action tokens achieves good monitoring performance. \\
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{images/among_us_probing.png}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}{Phase 1: Benchmark Construction - Baselines}
+    \textbf{Detecting Strategic Deception Using Linear  Probes} \cite{goldowsky-dill_detecting_2025} \\
+    Studies \emph{insider trading} \cite{scheurer2024largelanguagemodelsstrategically} and  \emph{sandbagging} \cite{benton2024sabotageevaluationsfrontiermodels} setups, with probes trained on toy datasets. \\
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{images/goldowsky_datasets.png}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}{Phase 1: Benchmark Construction - Baselines}
+    \textbf{Detecting Strategic Deception Using Linear  Probes} \cite{goldowsky-dill_detecting_2025} \\
+    Performance is generally very good, with the following failure modes identified:
+    \begin{itemize}
+        \item Spurious correlations
+        \item Aggregation Failures
+    \end{itemize}
+
+    \begin{center}
+        \includegraphics[width=0.50\textwidth]{images/goldowsky_auroc.png}
+        \includegraphics[width=0.45\textwidth]{images/goldowsky_example.png}
+        \end{center}
+
+\end{frame}
+
+\begin{frame}{Phase 1: Benchmark Construction - Baselines}
+    \textbf{Can we predict alignment before models finish thinking?} \cite{chan_can_2025} \\
+    \begin{itemize}
+        \item Monitoring CoT without final action output - this is our setup.
+        \item Evidence that I/O monitoring on CoT is not sufficient. 
+        \item 
+    \end{itemize}
+
+
+\end{frame}
+
+% TODO add some more traditional benchmarks and baselines for the adversarial attack setting. 
+
+
+
+\section{Phase 2: Adversarial Attacks and Robustness}
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness}
+    \textbf{Single-step CoT setup}\\
+    During this phase we study monitoring of latent concepts induced by the reasoning steps (CoT, etc...) of the models leading up to (excluding) the final output. \\
+    This is the same setup as shown in \cite{chan_can_2025}. \\
+    We limit our focus to single-step settings, while covering relevant concepts and induction mechanisms. 
+
+\end{frame}
+
+
+\section{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+    \textbf{Are latent monitors as vulnerable to obfuscation attacks as simple probes?} \\
+    Attack methods:
+    \begin{itemize}
+        \item Adversarial Obfuscation \cite{bailey_obfuscated_2025} 
+        \item RL obfuscation \cite{gupta_rl-obfuscation_2025}
+        \item simple soft prompt optimisation 
+    \end{itemize}
+    In general, these attack methods are extremely successful against traditional latent probes, and serve as a `worst-case' scenario for token level attacks (probably more powerful). \\
+    I predict robustness to reduce the success rate of these attacks, but not to eliminate it, as they are not $l_p$ bound. 
+\end{frame}
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+    \textbf{Do robustness and coverage guarantees improve the performance of input-level jailbreak detection?} \\
+    Test against methods in \cite{lian_semantic_2025}:
+    \begin{itemize}
+        \item GCC (gradient based family of attacks)
+        \item AutoDAN \cite{liu2024autodangeneratingstealthyjailbreak}
+        \item BEAST \cite{sadasivan2024fastadversarialattackslanguage}
+    \end{itemize}
+    Performance of traditional methods seems already good on these attacks, it is unclear how much is to be gained. \\
+    Furthermore, these attack setups to not consider reasoning traces. \\
+    
+    It is nevertheless interesting to study this setting to learn about different induction mechanisms and how (if at all) they affect the monitors more comprehensively.
+
+
+    % TODO add benchmarks
+    % TODO discussion about which attacks we care about 
+    % TODO performance is already good, so probably not much to gain here.
+\end{frame}
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+    \textbf{Does robustness address any of the issues identified by \cite{goldowsky-dill_detecting_2025}?} \\
+    Specifically, failure modes include:
+    \begin{itemize}
+        \item Spurious correlations
+        \item Aggregation Failures
+    \end{itemize}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{images/goldowsky_failure_examples.png}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+    \textbf{How do coverage guarantees behave in on-policy settings, and how does robustness affect this?} \\
+    
+\end{frame}
+
+
+\begin{frame}{Phase 2: Adversarial Attacks and Robustness - Research Questions}
+    \textbf{Can we design more efficient response policies with coverage guarantees?} 
+    \begin{itemize}
+        \item \cite{oldfield2025linearprobesdynamicsafety} use Truncated Polynomial Classifiers (TPC) to dynamically increase compute allocation to probes when uncertain.
+        \item \cite{mckenzie_stack_2025} introduce STACK, a multi-layer framework to tackle jailbreaks and unsafe output generations.
+    \end{itemize}
+    Using uncertainty quqantification from CP we might be able to design more efficient response policies, providing statistical guarantees on unsafe behaviours while minimising expensive interventions (e.g. llm-as-a-judge calls). 
+\end{frame}
+
+% TODO put more detail about the timing and sequences of steps, using 'maximum information' rule of thumb to prioritise. 
+
+\section{Phase 3: OOD Generalisation}
+
+\begin{frame}{Phase 3: OOD Generalisation}
+    In this phase we focus on multi-step settings.
+    % TODO outline the challenges? e.g. non-exchangeability, localized conformal prediction, etc...
+\end{frame}
+
+
+\section{Phase 4: Limited Ground Truth}
+
+\begin{frame}{Phase 4: Limited Ground Truth}
+    In this phase we extend our method to the case of limited ground truth, due to label noise as well as unpredictability of the model (future probing).
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography
+\end{frame}
+
+
+\end{document}
