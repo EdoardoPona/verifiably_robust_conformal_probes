@@ -166,6 +166,7 @@ Main Phases:
         % TODO add citation to apollo work doing this implicit prompting - probably the one on deception. 
         \item \emph{Direct Fine-tuning} - GRPO, RLHF, SFT, etc...
         \item \emph{Indirect Fine-tuning}
+        \item \emph{Context Distillation} \cite{snell2022learningdistillingcontext,askell2021generallanguageassistantlaboratory} on direct and indirect instructions.
     \end{itemize}
 
 \end{frame}
@@ -229,8 +230,9 @@ Main Phases:
     \textbf{Can we predict alignment before models finish thinking?} \cite{chan_can_2025} \\
     \begin{itemize}
         \item Monitoring CoT without final action output - this is our setup.
-        \item Evidence that I/O monitoring on CoT is not sufficient. 
-        \item 
+        \item Evidence that I/O monitoring on CoT is not sufficient because models CoTs are \emph{unfaithful}.
+        \item Studies several safety refusal benchmarks: `HarmBench', `SorryBench', `StrongREJECT'.
+        \item Unsure how this applies to other concepts and, more importantly, other induction methods.
     \end{itemize}
 
 
@@ -323,6 +325,10 @@ Main Phases:
 
 \begin{frame}{Phase 3: OOD Generalisation}
     In this phase we focus on multi-step settings.
+    \begin{itemize}
+        \item How do we deal with non-exchangeability of data?
+        \item How do we probe and aggregate effectively across multiple steps?
+    \end{itemize}
     % TODO outline the challenges? e.g. non-exchangeability, localized conformal prediction, etc...
 \end{frame}
 
