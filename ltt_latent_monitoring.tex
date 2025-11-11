@@ -1,0 +1,64 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{natbib}
+
+\begin{document}
+\title{LM latent monitoring with guarantees}
+\maketitle
+
+\section{Setup}
+\begin{itemize}
+
+    \item The language model \( m = e \circ d\) is composed of an encoder \( e: \mathcal{X} \to \mathcal{Z} \) and a decoder \( d: \mathcal{Z} \to \mathcal{X} \), where \( \mathcal{X} \) is the input space (e.g., text sequences) and \( \mathcal{Z} \) is the latent space (residual stream, attention activations, etc...) where we will probe.
+
+    \item Safeguards are denoted by \( s \), and will take on input either the input \( x \) or the latent representation \( z \).
+
+\end{itemize}
+
+
+\section{Experiments}
+
+
+\subsection{Guaranteed Safety Risk}
+In this setup we want to guarantee that the safety risk of the outputs never exceeds a certain threshold. 
+For now, we will assume we only have a two level mechanism: a latent probe \( s_l \) which is `free' to evaluate at every step and a more expensive input based safeguard \( s_i \) whose usage we want to minimize.
+
+% what about false positive rate? 
+
+\subsubsection{Perfect input-space Monitor}
+Assume the input monitor \( s_i \) is `perfect' (we can't do any better, and we cannot reject any inputs).
+This case is identical to 3.2 of \cite{angelopoulos_learn_2022} (selective classification), except we want to control for recall instead of accuracy, and delegate to \( s_i \) instead of abstaining.
+
+
+How can we make this more efficient by `confidently' rejecting with the latent monitor \( s_l \)?
+
+
+\subsection{Imperfect input-space Monitor}
+The input-space monitor \( s_i \) will reject based on confidence, we want to minimize its usage and guarantee a certain risk overall (across both monitors). 
+
+
+
+
+\subsection{Guaranteed Monitor Budget}
+Direct response to \cite{mckenzie_detecting_2025}
+\begin{itemize}
+    \item Risk is \( R_{call}(\lambda_j) \) which we want to keep below budget \( k \). 
+\end{itemize}
+
+
+
+\section{Extensions}
+\begin{itemize}
+    \item separating uncertainties (aleatoric vs epistemic)
+    \item n-level monitoring (hierarchical classification with abstention)
+    \item robustness
+    \item online monitoring with aLTT
+\end{itemize}
+
+
+\bibliographystyle{plainnat}
+\bibliography{biblio}
+
+\end{document}
