@@ -2,7 +2,16 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
 \usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{bm}
+
+\newcommand{\indicator}{\mathds{1}}
+\newcommand{\edoardo}[1]{\textcolor{red}{[ep: #1]}}
+
 
 \begin{document}
 \title{LM latent monitoring with guarantees}
@@ -27,33 +36,108 @@ For now, we will assume we only have a two level mechanism: a latent probe \( s_
 
 % what about false positive rate? 
 
-\subsubsection{Perfect input-space Monitor}
-Assume the input monitor \( s_i \) is `perfect' (we can't do any better, and we cannot reject any inputs).
-This case is identical to 3.2 of \cite{angelopoulos_learn_2022} (selective classification), except we want to control for recall instead of accuracy, and delegate to \( s_i \) instead of abstaining.
 
+\subsubsection{Selective Risk Control}
+\label{sec:selective_risk_control}
 
-How can we make this more efficient by `confidently' rejecting with the latent monitor \( s_l \)?
+Here we are only interested in controlling the selective risk of the interactions we approve. This setting is almost identical to 3.2 of \cite{angelopoulos_learn_2022}. 
 
+For simplicity we start with a binary notion of safety \( \mathcal{Y} = \{0, 1\} \), where 1 is safe and 0 is unsafe.
+We latent and input space monitors \( s_l : \mathcal{Z} \to \Delta^{\mathcal{Y}} \) and \( s_i : \mathcal{X} \to \Delta^{\mathcal{Y}} \) which output a safety score for each interaction (higher is safer).
+We are looking for a policy that confidently accepts, confidently rejects, or delegates to the input-space monitor to make the final decision.
 
-\subsection{Imperfect input-space Monitor}
-The input-space monitor \( s_i \) will reject based on confidence, we want to minimize its usage and guarantee a certain risk overall (across both monitors). 
+Taking \( y_{max} = \text{arg max}_y s_l(z)_y \) Our monitor prediction is the following: 
 
+\[
+    \mathcal{T}_\lambda(x) =
+    \begin{cases}
+        y_{max}, & s_l(z)_{y_{max}} > \lambda, \\
+        \text{arg max} \{ s_i(z) \}, & \text{else}.
+    \end{cases}
+\]
+
+Since we assume the input-space monitor makes no mistakes, the risk we are trying to control is the error rate conditional on a prediction by the latent monitor: 
+\[
+    R(\mathcal{T}_\lambda) = \mathbb{P}(s_l(z)_{y_{max}} \neq Y \mid s_l(z)_{y_{max}} > \lambda).
+\]
+
+The empirical risk over a calibration set of size \( n \) is then:
+\[
+    \hat{R}_n(\mathcal{T}_\lambda) = 
+    \frac{
+        \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} > \lambda \} \indicator\{ y_{max} \neq y_i \}
+    }{
+        \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} > \lambda \}
+    }.
+\]
+
+A valid \( p \)-value for \( \mathcal{H}_0: R(\mathcal{T}_\lambda) > \alpha \) is:
+\[ 
+    p = \mathbb{P}(\text{Binomial}(m, \alpha) \leq k),
+\]
+where \( m = \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} > \lambda \} \) is the number of accepted examples by the latent monitor and \( k = \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} > \lambda \} \indicator\{ y_{max} \neq y_i \} \) is the number of errors made by the latent monitor.
+
+\edoardo{\\
+    Extend to qLTT to control quantiles of mis-prediction;\\
+    consider a monitor with can express epistemic and aleatoric uncertainty separately
+}
 
 
 
 \subsection{Guaranteed Monitor Budget}
-Direct response to \cite{mckenzie_detecting_2025}
-\begin{itemize}
-    \item Risk is \( R_{call}(\lambda_j) \) which we want to keep below budget \( k \). 
-\end{itemize}
+\label{sec:guaranteed_monitor_budget}
+
+As a direct response to \cite{mckenzie_detecting_2025}, 
+here all we care about is picking the safest threshold such that the monitoring budget is at or below some fraction of calls \( \alpha \).
+The prediction mechanism is the same as in section \ref{sec:selective_risk_control}.
+Our risk is now the monitoring rate:
+\[
+    R(\mathcal{T}_\lambda) = \mathbb{P}(s_l(z)_{y_{max}} \leq \lambda).
+\]
+
+and the empirical risk over a calibration set of size \( n \) is:
+\[
+    \hat{R}_n(\mathcal{T}_\lambda) =
+    \frac{
+        \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} \leq \lambda \}
+    }{
+        n
+    }.
+\]
+
+A valid \( p \)-value for \( \mathcal{H}_0: R(\mathcal{T}_\lambda) > k \) is:
+\[ 
+    p = \mathbb{P}(\text{Binomial}(n, \alpha) \leq m),
+\]
+where \( m = \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} \leq \lambda \} \) is the number of examples delegated to the input-space monitor.
+
+We would pick \( \lambda^* = \text{max} \{ \hat{\Lambda} \} \), where \( \hat{\Lambda}\) is the set of thresholds that reject \( \mathcal{H}_0 \) returned by the FWER control procedure.
+
+\edoardo{
+    I imagine we can use CRC for both \ref{sec:selective_risk_control} and \ref{sec:guaranteed_monitor_budget} to get tighter bounds}
 
 
+
+\subsection{Combined Safety and Budget Guarantees}
+
+Consider \( \bm{\lambda} = [0, 1]^{2} \)
+
+\[ 
+    \mathcal{T}_{\mathbf{\lambda}} = 
+    \begin{cases}
+        \text{reject}, & s_l(z)_0 > \lambda_0, \\
+        \text{accept}, & s_l(z)_1 > \lambda_1, \\
+        \text{delegate}, & \text{else}.
+    \end{cases}
+\]
+
+We want to guarantee some (one-sided) safety risk (FNR or FPR) while also guaranteeing a maximum monitoring budget.
 
 \section{Extensions}
 \begin{itemize}
     \item separating uncertainties (aleatoric vs epistemic)
     \item n-level monitoring (hierarchical classification with abstention)
-    \item robustness
+    \item robustness (look at section 6.3 in \cite{bates_distribution-free_2021})
     \item online monitoring with aLTT
 \end{itemize}
 
