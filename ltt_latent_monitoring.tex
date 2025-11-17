@@ -50,7 +50,7 @@ We are looking for a policy that confidently accepts, confidently rejects, or de
 Taking \( y_{max} = \text{arg max}_y s_l(z)_y \) Our monitor prediction is the following: 
 
 \[
-    \mathcal{T}_\lambda(x) =
+    \mathcal{T}_\lambda(z) =
     \begin{cases}
         y_{max}, & s_l(z)_{y_{max}} > \lambda, \\
         \text{arg max} \{ s_i(z) \}, & \text{else}.
@@ -128,11 +128,11 @@ Consider \( \bm{\lambda} \in [0, 1]^{2} \), with \( \lVert \bm{\lambda} \rVert_{
 The monitoring policy is defined as:
 
 \[ 
-    \mathcal{T}_{\mathbf{\lambda}}(x)= 
+    \mathcal{T}_{\mathbf{\lambda}}(z)= 
     \begin{cases}
         0, & s_l(z)_0 > \lambda_0, \\
         1, & s_l(z)_1 > \lambda_1, \\
-        s_i(x), & \text{else}.
+        \text{arg max}\{s_i(z)\}, & \text{else}.
     \end{cases}
 \]
 
