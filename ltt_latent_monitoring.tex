@@ -64,7 +64,7 @@ Since we assume the input-space monitor makes no mistakes, the risk we are tryin
 
 The empirical risk over a calibration set of size \( n \) is then:
 \[
-    \hat{R}_n(\mathcal{T}_\lambda) = 
+    \hat{R}(\mathcal{T}_\lambda) = 
     \frac{
         \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} > \lambda \} \indicator\{ y_{max} \neq y_i \}
     }{
@@ -98,7 +98,7 @@ Our risk is now the monitoring rate:
 
 and the empirical risk over a calibration set of size \( n \) is:
 \[
-    \hat{R}_n(\mathcal{T}_\lambda) =
+    \hat{R}(\mathcal{T}_\lambda) =
     \frac{
         \sum_{i=1}^n \indicator\{ s_l(z_i)_{y_{max}} \leq \lambda \}
     }{
@@ -121,18 +121,62 @@ We would pick \( \lambda^* = \text{max} \{ \hat{\Lambda} \} \), where \( \hat{\L
 
 \subsection{Combined Safety and Budget Guarantees}
 
-Consider \( \bm{\lambda} = [0, 1]^{2} \)
+In this setting we want to control both a monitoring budget (the number of times we can afford to call the input-space monitor \( s_i \)) and a safety risk (the performance of the latent monitor \( s_l \)).
+As in the examples above, a safety prediction of 0 (\emph{accept}) means the interaction is deemed safe, while a safety prediction of 1 (\emph{reject}) means the interaction is predicted unsafe.
+
+Consider \( \bm{\lambda} \in [0, 1]^{2} \), with \( \lVert \bm{\lambda} \rVert_{1} > 1\) (to prevent overlap between accept and reject regions).
+The monitoring policy is defined as:
 
 \[ 
-    \mathcal{T}_{\mathbf{\lambda}} = 
+    \mathcal{T}_{\mathbf{\lambda}}(x)= 
     \begin{cases}
-        \text{reject}, & s_l(z)_0 > \lambda_0, \\
-        \text{accept}, & s_l(z)_1 > \lambda_1, \\
-        \text{delegate}, & \text{else}.
+        0, & s_l(z)_0 > \lambda_0, \\
+        1, & s_l(z)_1 > \lambda_1, \\
+        s_i(x), & \text{else}.
     \end{cases}
 \]
 
-We want to guarantee some (one-sided) safety risk (FNR or FPR) while also guaranteeing a maximum monitoring budget.
+The risk associated with the monitoring budget is similar as in section \ref{sec:guaranteed_monitor_budget}, except we now have two thresholds to consider:
+\[
+    R_{cost}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(1-\lambda_1 < s_l(z)_0 < \lambda_0).
+\]
+\[
+    \hat{R}_{cost} = \frac{
+        \sum_{i=1}^n \indicator\{ 1-\lambda_1 < s_l(z_i)_0 < \lambda_0 \}
+    }{
+        n
+    }.
+\]
+
+% NOTE: discuss using accuracy, and why that is not guaranteed to work, because of the symmetric thresholds, and that there might not be a solution to guaranteeing both risks.
+% If our safety risk is asymmetrical (e.g. FNR, FPR), is there always a solution to guaranteeing both risks?
+
+% The performance risk we're interested in is the false negative rate of the latent monitor (i.e. the number of unsafe examples classified as safe, \(\mathbb{P}(\text{accept} \mid \text{unsafe})\)):
+% \[
+%     R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(
+%         s_l(z)_0 > \lambda_0 \mid Y = 1
+%     ).
+% \]
+
+% \[
+%     \hat{R}_{safety} = \frac{
+%         \sum_{i=1}^n \indicator\{ s_l(z_i)_0 > \lambda_0 \} \indicator\{ y_i = 1 \}
+%     }{
+%         \sum_{i=1}^n \indicator\{ y_i = 1 \}
+%     }.
+% \]
+% NOTE: vanilla FNR might be impossible, because it is not conditional on making a prediction.
+
+The performance risk we're interested in is the selective risk of the latent monitor when it predicts safe. Specifically, we want to guarantee that when the latent monitor predicts safe, it is correct with high probability:
+\[
+    R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0).
+\]
+\edoardo{alternatively, we could condition not on `predicting safe', but on `making any prediction', i.e. 
+\( R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0 \lor s_l(z)_1 > \lambda_1). \)}
+
+\edoardo{For symmetric safety risks such as accuracy (where \( \lambda_0 = 1 - \lambda_1 \)) there may not always be a solution (\( \hat{\Lambda}=\emptyset \)). We should show that there is always a solution for the asymmetric case (e.g. you can always make FNR arbitrarily small, while maintaining the budget, by making \( \lambda_0 \) very close to 1 and \( \lambda_1 \) very close to 0, at the cost of FPR, and similarly for inverted scores).}
+
+All of the above are risks defined over binary loss functions, so we can use the usual binomial bound.
 
 \section{Extensions}
 \begin{itemize}
