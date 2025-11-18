@@ -138,11 +138,11 @@ The monitoring policy is defined as:
 
 The risk associated with the monitoring budget is similar as in section \ref{sec:guaranteed_monitor_budget}, except we now have two thresholds to consider:
 \[
-    R_{cost}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(1-\lambda_1 < s_l(z)_0 < \lambda_0).
+    R_{cost}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(s_l(z)_0 < \lambda_0 \wedge s_l(z)_1 < \lambda_1).
 \]
 \[
     \hat{R}_{cost} = \frac{
-        \sum_{i=1}^n \indicator\{ 1-\lambda_1 < s_l(z_i)_0 < \lambda_0 \}
+        \sum_{i=1}^n \indicator\{ s_l(z)_0 < \lambda_0 \wedge s_l(z)_1 < \lambda_1 \}
     }{
         n
     }.
@@ -171,11 +171,12 @@ The performance risk we're interested in is the selective risk of the latent mon
 \[
     R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0).
 \]
+\nicola{make label $Y$ consistent with predictor (i.e., $Y=0$ should mean safe)}
 \edoardo{alternatively, we could condition not on `predicting safe', but on `making any prediction', i.e. 
 \( R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0 \lor s_l(z)_1 > \lambda_1). \)}
 
 \edoardo{For symmetric safety risks such as accuracy (where \( \lambda_0 = 1 - \lambda_1 \)) there may not always be a solution (\( \hat{\Lambda}=\emptyset \)). We should show that there is always a solution for the asymmetric case (e.g. you can always make FNR arbitrarily small, while maintaining the budget, by making \( \lambda_0 \) very close to 1 and \( \lambda_1 \) very close to 0, at the cost of FPR, and similarly for inverted scores).}
-
+\np{not sure I understand the symmetric/asymmetric thing}
 All of the above are risks defined over binary loss functions, so we can use the usual binomial bound.
 
 \section{Extensions}
