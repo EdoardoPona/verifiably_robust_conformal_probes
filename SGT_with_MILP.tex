@@ -1,0 +1,25 @@
+\section{Complementary - Optimal learning of graphs for sequential graph testing with MILP:}
+\textbf{Inputs:}
+\begin{itemize}
+    \item $p_i$ (p-values for each node $i$, computed with held-out calibration set)
+    \item $\delta$ (overall FWER error)
+\end{itemize}
+\textbf{Variables:}
+\begin{itemize}
+    \item $0 \leq \delta_i \leq \delta$ (initial error budget for each node $i$)
+    \item $0 \leq s_i \leq \delta$ (error budget available at testing time)
+    \item $0 \leq v_{ij} \leq \delta$ (error budget transferred from $i$ to $j$ if $i$ is rejected)
+    \item $r_i \in \{0,1\}$ (whether or not $i$ is rejected, i.e., $p_i\leq s_i$)
+\end{itemize}
+\textbf{Maximize} $\sum_i r_i$ \textbf{subject to}
+\begin{itemize}
+    \item total initial budget constraints: $\sum_i \delta_i \leq \delta$, for all $i$
+    \item inflow constraints:  $s_i = \delta_i + \sum_{j}v_{ji}$, for all $i$
+    \item outflow can't be bigger than node budget: $\sum_j v_{ij} \leq s_i$, for all $i$
+    \item outflow is zero if node not rejected: $\sum_j v_{ij} \leq s_i \leq \delta \cdot r_i$, for all $i$ (note here we use $\delta$ as a big-M constant)
+    \item rejection constraints: $p_i \leq s_i +\delta(1-r_i)$, for all $i$ (again,  $\delta$ as a big-M constant) 
+\end{itemize}
+Alternatively, one can have a combined objective 
+$$\sum_i r_i + w\sum_i r_i\cdot (s_i-p_i)$$
+(where $w>0$ is a hyperparameter) the idea is to make it ``comfortably'' reject the null so to make it more robust to sampling variability. Perhaps how much bigger $s_i$ needs to be can be found with statistical bounds.
+
