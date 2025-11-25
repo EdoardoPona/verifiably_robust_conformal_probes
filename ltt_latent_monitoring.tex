@@ -120,6 +120,7 @@ We would pick \( \lambda^* = \text{max} \{ \hat{\Lambda} \} \), where \( \hat{\L
 
 
 \subsection{Combined Safety and Budget Guarantees}
+\label{sec:combined_safety_and_budget_guarantee}
 
 In this setting we want to control both a monitoring budget (the number of times we can afford to call the input-space monitor \( s_i \)) and a safety risk (the performance of the latent monitor \( s_l \)).
 As in the examples above, a safety prediction of 0 (\emph{accept}) means the interaction is deemed safe, while a safety prediction of 1 (\emph{reject}) means the interaction is predicted unsafe.
@@ -171,13 +172,39 @@ The performance risk we're interested in is the selective risk of the latent mon
 \[
     R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0).
 \]
-\nicola{make label $Y$ consistent with predictor (i.e., $Y=0$ should mean safe)}
 \edoardo{alternatively, we could condition not on `predicting safe', but on `making any prediction', i.e. 
 \( R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid s_l(z)_0 > \lambda_0 \lor s_l(z)_1 > \lambda_1). \)}
 
 \edoardo{For symmetric safety risks such as accuracy (where \( \lambda_0 = 1 - \lambda_1 \)) there may not always be a solution (\( \hat{\Lambda}=\emptyset \)). We should show that there is always a solution for the asymmetric case (e.g. you can always make FNR arbitrarily small, while maintaining the budget, by making \( \lambda_0 \) very close to 1 and \( \lambda_1 \) very close to 0, at the cost of FPR, and similarly for inverted scores).}
-\nicola{not sure I understand the symmetric/asymmetric thing}
-All of the above are risks defined over binary loss functions, so we can use the usual binomial bound.
+
+
+
+\section{Thresholding with Epistemic uncertainty}
+We design the latent probe \(s_l\) as an evidential classifier to explicitly model epistemic uncertainty. 
+Instead of a standard softmax output, \(s_l\) employs a non-negative activation function (e.g., Softplus) 
+to predict an evidence vector \(\mathbf{e} = [e_1, e_2]^\top\) for the binary classes. 
+This evidence parameterizes a Dirichlet distribution \(\text{Dir}(\boldsymbol{p} \mid \boldsymbol{\alpha})\) 
+via the transformation \(\alpha_k = e_k + 1\). 
+The expected class probability is computed as \(\hat{p}_k = \alpha_k / S\), and the associated 
+epistemic uncertainty is derived as \(u = K / S\), where \(K=2\) (binary case), \(S = \sum_{k=1}^K \alpha_k\) is the Dirichlet strength.
+
+
+\[
+    \mathcal{T}_{\mathbf{\lambda}}(z)= 
+    \begin{cases}
+        \text{arg max}\{s_i(z)\}, & u \geq \lambda_u, \\
+        0, & \hat{p}_0 > \lambda_p \text{ and } u < \lambda_u, \\
+        1, & \hat{p}_1 > 1 - \lambda_p \text{ and } u < \lambda_u, \\
+    \end{cases}
+\]
+
+\[
+    R_{cost}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(u \geq \lambda_u).
+\]
+We can use analogous safety risks to section \ref{sec:combined_safety_and_budget_guarantee}
+\[
+    R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid \hat{p}_0 > \lambda_p, u < \lambda_u).
+\]
 
 
 \input{extensions.tex}
