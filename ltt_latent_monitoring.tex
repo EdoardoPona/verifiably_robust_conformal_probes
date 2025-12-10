@@ -118,6 +118,7 @@ We would pick \( \lambda^* = \text{max} \{ \hat{\Lambda} \} \), where \( \hat{\L
     I imagine we can use CRC for both \ref{sec:selective_risk_control} and \ref{sec:guaranteed_monitor_budget} to get tighter bounds}
 \nicola{let's discuss next time: LTT guarantees are PAC-like and are somewhat more appealing as they consider error due to calib set sampling (instead CRC or CP consider the joint calib+test distribution)}
 
+Here we can use fixed sequence testing \citep{angelopoulos_learn_2022} on \( \lambda \) ordered from largest to smallest.
 
 \subsection{Combined Safety and Budget Guarantees}
 \label{sec:combined_safety_and_budget_guarantee}
@@ -129,7 +130,7 @@ Consider \( \bm{\lambda} \in [0, 1]^{2} \), with \( \lVert \bm{\lambda} \rVert_{
 The monitoring policy is defined as:
 
 \[ 
-    \mathcal{T}_{\mathbf{\lambda}}(z)= 
+    \mathcal{T}_{\mathbf{\bm{\lambda}}}(z)= 
     \begin{cases}
         0, & s_l(z)_0 > \lambda_0, \\
         1, & s_l(z)_1 > \lambda_1, \\
@@ -177,6 +178,17 @@ The performance risk we're interested in is the selective risk of the latent mon
 
 \edoardo{For symmetric safety risks such as accuracy (where \( \lambda_0 = 1 - \lambda_1 \)) there may not always be a solution (\( \hat{\Lambda}=\emptyset \)). We should show that there is always a solution for the asymmetric case (e.g. you can always make FNR arbitrarily small, while maintaining the budget, by making \( \lambda_0 \) very close to 1 and \( \lambda_1 \) very close to 0, at the cost of FPR, and similarly for inverted scores).}
 
+\paragraph{Cascaded 2D testing}
+This leaves us with a 2D grid of parameters to search over, for which we can use cascaded 2D testing or fallback SGT testing \citep{angelopoulos_learn_2022}.
+While we want both risks to be controlled simultaneously, we aren't really interested in \emph{minimising} \(R_{cost}\), only \emph{satisfying} it. 
+However, conditional on the \(R_{cost}\) being satisfied
+We display decreasingly conservative \(\lambda_0\) candidates across the columns of our grah and decreasingly conservative \(\lambda_1\) candidates across the rows, then proceed by testing row-wise (i.e., for fixed \(\lambda_1\)), find the least conservative \(\lambda_0\). 
+If we reach the end of a row without failing to reject any hypothesis, we propagate the row's budget to the next row and look for an improved \(R_{cost}\). 
+Finally, we return the pair with the least conservative \( \lambda_0 \).  
+
+\paragraph{Pareto Testing}
+
+
 
 
 \section{Thresholding with Epistemic uncertainty}
@@ -189,6 +201,7 @@ The expected class probability is computed as \(\hat{p}_k = \alpha_k / S\), and 
 epistemic uncertainty is derived as \(u = K / S\), where \(K=2\) (binary case), \(S = \sum_{k=1}^K \alpha_k\) is the Dirichlet strength.
 
 
+\paragraph{Symmetric Thresholding}
 \[
     \mathcal{T}_{\mathbf{\lambda}}(z)= 
     \begin{cases}
@@ -204,6 +217,28 @@ epistemic uncertainty is derived as \(u = K / S\), where \(K=2\) (binary case), 
 We can use analogous safety risks to section \ref{sec:combined_safety_and_budget_guarantee}
 \[
     R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid \hat{p}_0 > \lambda_p, u < \lambda_u).
+\]
+
+\paragraph{Asymmetric Thresholding}
+\[
+    \mathcal{T}_{\mathbf{\lambda}}(z)= 
+    \begin{cases}
+        0, & \hat{p}_0 > 0.5 \land u < \lambda_0, \\
+        1, & \hat{p}_1 > 0.5 \land u < \lambda_1, \\
+        \text{delegate} & \text{else}
+    \end{cases}
+\]
+
+\[
+    R_{cost}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}\bigl(
+        (u \geq \lambda_0 \land \hat{p}_0 > 0.5) 
+        \land 
+        (u \geq \lambda_1 \land \hat{p}_1 > 0.5)
+        \bigr).
+\]
+
+\[
+    R_{safety}(\mathcal{T}_{\bm{\lambda}}) = \mathbb{P}(Y=1 \mid \hat{p}_0 > 0.5, u < \lambda_0).
 \]
 
 
